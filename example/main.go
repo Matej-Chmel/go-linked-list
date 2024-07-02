@@ -1,8 +1,3 @@
-# Go Linked List
-Generic library for singly and doubly linked lists.
-
-## Example
-```go
 package main
 
 import (
@@ -18,10 +13,3 @@ func main() {
 	fmt.Println(singleHead)
 	fmt.Println(doubleHead)
 }
-```
-
-### Output
-```none
-1 -> 2 -> 3
-10 <-> 20 <-> 30
-```
