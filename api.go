@@ -1,10 +1,6 @@
 package golinkedlist
 
-import (
-	"strings"
-
-	at "github.com/Matej-Chmel/go-any-to-string"
-)
+import at "github.com/Matej-Chmel/go-any-to-string"
 
 // A node in doubly linked list
 type DoubleLinkNode[T any] struct {
@@ -25,6 +21,23 @@ func NewDoubleLinkNode[T any](
 func NewEmptyDoubleLinkNode[T any]() *DoubleLinkNode[T] {
 	var val T
 	return NewDoubleLinkNode(nil, nil, val)
+}
+
+// Returns a string representation from this node to the last
+// while respecting default format for the elements of the list
+// and given format symbols for the list itself
+func (n *DoubleLinkNode[T]) Format(symbols *FormatSymbols) string {
+	return n.FormatCustom(at.NewOptions(), symbols)
+}
+
+// Returns a string representation from this node to the last
+// while respecting given format options for the elements of the list
+// and format symbols for the list itself
+func (n *DoubleLinkNode[T]) FormatCustom(
+	options *at.Options, symbols *FormatSymbols,
+) string {
+	node := &doubleImpl[T]{node: n}
+	return formatToString(options, node, symbols)
 }
 
 // Returns previous node that has nil Prev pointer
@@ -71,20 +84,10 @@ func (n *DoubleLinkNode[T]) GetPrevAt(index int) *DoubleLinkNode[T] {
 	return current
 }
 
-// Returns string representation from this node to the last
-// in form 1 <-> 2 <-> 3
+// Returns a string representation from this node to the last
+// in format [1 <> 2 <> 3]
 func (n DoubleLinkNode[T]) String() string {
-	var builder strings.Builder
-	builder.WriteString(at.AnyToString(n.Val))
-	ptr := n.Next
-
-	for ptr != nil {
-		builder.WriteString(" <-> ")
-		builder.WriteString(at.AnyToString(ptr.Val))
-		ptr = ptr.Next
-	}
-
-	return builder.String()
+	return n.Format(NewFormatSymbols(false))
 }
 
 // Creates connected node for doubly linked list from given values
@@ -130,6 +133,23 @@ func NewSingleLinkNode[T any](next *SingleLinkNode[T], val T) *SingleLinkNode[T]
 	return &SingleLinkNode[T]{Next: next, Val: val}
 }
 
+// Returns a string representation from this node to the last
+// while respecting default format for the elements of the list
+// and given format symbols for the list itself
+func (n *SingleLinkNode[T]) Format(symbols *FormatSymbols) string {
+	return n.FormatCustom(at.NewOptions(), symbols)
+}
+
+// Returns a string representation from this node to the last
+// while respecting given format options for the elements of the list
+// and format symbols for the list itself
+func (n *SingleLinkNode[T]) FormatCustom(
+	options *at.Options, symbols *FormatSymbols,
+) string {
+	node := &singleImpl[T]{node: n}
+	return formatToString(options, node, symbols)
+}
+
 // Returns last node that has nil Next pointer
 func (n *SingleLinkNode[T]) GetLast() *SingleLinkNode[T] {
 	current := n
@@ -152,20 +172,10 @@ func (n *SingleLinkNode[T]) GetNextAt(index int) *SingleLinkNode[T] {
 	return current
 }
 
-// Returns string representation from this node to the last
-// in form 1 -> 2 -> 3
+// Returns a string representation from this node to the last
+// in format [1 > 2 > 3]
 func (n SingleLinkNode[T]) String() string {
-	var builder strings.Builder
-	builder.WriteString(at.AnyToString(n.Val))
-	ptr := n.Next
-
-	for ptr != nil {
-		builder.WriteString(" -> ")
-		builder.WriteString(at.AnyToString(ptr.Val))
-		ptr = ptr.Next
-	}
-
-	return builder.String()
+	return n.Format(NewFormatSymbols(true))
 }
 
 // Creates connected node for singly linked list from given values
