@@ -3,7 +3,7 @@ Generic library for singly and doubly linked lists.
 
 ## Installation
 ```bash
-go get github.com/Matej-Chmel/go-linked-list@v1.0.1
+go get github.com/Matej-Chmel/go-linked-list@v1.0.2
 ```
 
 ## Features

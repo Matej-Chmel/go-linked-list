@@ -144,6 +144,21 @@ func TestDoublyLinkedList(ot *testing.T) {
 	}
 }
 
+func TestEmptyList(ot *testing.T) {
+	t := newTester(ot)
+	n1 := lk.CreateSinglyLinkedList[*lk.SingleLinkNode[bool]](nil)
+	n2 := lk.CreateDoublyLinkedList[*lk.DoubleLinkNode[complex128]](nil)
+	expected := "[nil]"
+
+	if actual := n1.String(); actual != expected {
+		t.throwMismatch(actual, expected)
+	}
+
+	if actual := n2.String(); actual != expected {
+		t.throwMismatch(actual, expected)
+	}
+}
+
 func TestSinglyLinkedList(ot *testing.T) {
 	t := newTester(ot)
 	head := lk.CreateSinglyLinkedList[int32](1, 2, 4, 8, 16)
