@@ -23,6 +23,38 @@ func NewEmptyDoubleLinkNode[T any]() *DoubleLinkNode[T] {
 	return NewDoubleLinkNode(nil, nil, val)
 }
 
+// Returns true if the values of a sublist from this node to the last
+// match the values of a sublist from the other node to its last node.
+// To compare values an equals function is required.
+func (n *DoubleLinkNode[T]) AreEqual(
+	other *DoubleLinkNode[T], equals func(*T, *T) bool,
+) bool {
+	a, b := n, other
+
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+
+	for {
+		if !equals(&a.Val, &b.Val) {
+			return false
+		}
+
+		if a.Next == nil || b.Next == nil {
+			a = a.Next
+			b = b.Next
+			break
+		} else if a.Next.Prev != a || b.Next.Prev != b {
+			return false
+		}
+
+		a = a.Next
+		b = b.Next
+	}
+
+	return a == nil && b == nil
+}
+
 // Returns a string representation from this node to the last
 // while respecting default format for the elements of the list
 // and given format symbols for the list itself
@@ -31,13 +63,24 @@ func (n *DoubleLinkNode[T]) Format(symbols *FormatSymbols) string {
 }
 
 // Returns a string representation from this node to the last
-// while respecting given format options for the elements of the list
-// and format symbols for the list itself
+// while respecting given format symbols for the list itself
+// and converting every node value using any-to-string library
 func (n *DoubleLinkNode[T]) FormatCustom(
 	options *at.Options, symbols *FormatSymbols,
 ) string {
+	return n.FormatCustomFunction(func(t *T) string {
+		return at.AnyToStringCustom(*t, options)
+	}, symbols)
+}
+
+// Returns a string representation from this node to the last
+// while respecting given format symbols for the list itself
+// and converting every node value using a conversion function
+func (n *DoubleLinkNode[T]) FormatCustomFunction(
+	conv func(*T) string, symbols *FormatSymbols,
+) string {
 	node := &doubleImpl[T]{node: n}
-	return formatToString(options, node, symbols)
+	return formatToString(conv, node, symbols)
 }
 
 // Returns previous node that has nil Prev pointer
@@ -82,6 +125,20 @@ func (n *DoubleLinkNode[T]) GetPrevAt(index int) *DoubleLinkNode[T] {
 	}
 
 	return current
+}
+
+// Returns true if for every nodes statement (node.Next.Prev == node)
+// is true
+func (n *DoubleLinkNode[T]) IsValid() bool {
+	for n != nil && n.Next != nil {
+		if n.Next.Prev != n {
+			return false
+		}
+
+		n = n.Next
+	}
+
+	return true
 }
 
 // Returns a string representation from this node to the last
@@ -133,6 +190,26 @@ func NewSingleLinkNode[T any](next *SingleLinkNode[T], val T) *SingleLinkNode[T]
 	return &SingleLinkNode[T]{Next: next, Val: val}
 }
 
+// Returns true if the values of a sublist from this node to the last
+// match the values of a sublist from the other node to its last node.
+// To compare values an equals function is required.
+func (n *SingleLinkNode[T]) AreEqual(
+	other *SingleLinkNode[T], equals func(*T, *T) bool,
+) bool {
+	a, b := n, other
+
+	for a != nil && b != nil {
+		if !equals(&a.Val, &b.Val) {
+			return false
+		}
+
+		a = a.Next
+		b = b.Next
+	}
+
+	return a == nil && b == nil
+}
+
 // Returns a string representation from this node to the last
 // while respecting default format for the elements of the list
 // and given format symbols for the list itself
@@ -141,13 +218,24 @@ func (n *SingleLinkNode[T]) Format(symbols *FormatSymbols) string {
 }
 
 // Returns a string representation from this node to the last
-// while respecting given format options for the elements of the list
-// and format symbols for the list itself
+// while respecting given format symbols for the list itself
+// and converting every node value using any-to-string library
 func (n *SingleLinkNode[T]) FormatCustom(
 	options *at.Options, symbols *FormatSymbols,
 ) string {
+	return n.FormatCustomFunction(func(t *T) string {
+		return at.AnyToStringCustom(*t, options)
+	}, symbols)
+}
+
+// Returns a string representation from this node to the last
+// while respecting given format symbols for the list itself
+// and converting every node value using a conversion function
+func (n *SingleLinkNode[T]) FormatCustomFunction(
+	conv func(*T) string, symbols *FormatSymbols,
+) string {
 	node := &singleImpl[T]{node: n}
-	return formatToString(options, node, symbols)
+	return formatToString(conv, node, symbols)
 }
 
 // Returns last node that has nil Next pointer

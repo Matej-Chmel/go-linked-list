@@ -2,6 +2,7 @@ package golinkedlist_test
 
 import (
 	"fmt"
+	"math"
 	"runtime"
 	"testing"
 
@@ -34,12 +35,48 @@ func (t *tester) throw(skip int, format string, data ...any) {
 	t.failed = true
 }
 
+func (t *tester) throwEquals(actual, expected any) {
+	t.throwEqualsImpl(actual, expected, false)
+}
+
+func (t *tester) throwEqualsImpl(actual, expected any, should bool) {
+	if t.failed {
+		return
+	}
+
+	modifier := " NOT"
+
+	if should {
+		modifier = ""
+	}
+
+	t.throw(3, "\n\n%v\n\nSHOULD%s EQUAL\n\n%v", actual, modifier, expected)
+}
+
 func (t *tester) throwMismatch(actual, expected string) {
 	if t.failed {
 		return
 	}
 
 	t.throw(2, "\n\n%s\n\n!=\n\n%s", actual, expected)
+}
+
+func (t *tester) throwNotEquals(actual, expected any) {
+	t.throwEqualsImpl(actual, expected, true)
+}
+
+func (t *tester) throwValidity(head any, shouldBeValid bool) {
+	if t.failed {
+		return
+	}
+
+	modifier := " NOT"
+
+	if shouldBeValid {
+		modifier = ""
+	}
+
+	t.throw(2, "\n\n%v\n\nSHOULD%s BE VALID", head, modifier)
 }
 
 func checkNextDouble[T comparable](
@@ -142,6 +179,16 @@ func TestDoublyLinkedList(ot *testing.T) {
 	if actual := head.FormatCustom(options, symbols); actual != expected {
 		t.throwMismatch(actual, expected)
 	}
+
+	conversion := func(data *float64) string {
+		return fmt.Sprintf("<%.3f>", *data)
+	}
+
+	expected = "(<1.100>, <2.010>, <4.310>, <8.901>, <16.320>)"
+
+	if actual := head.FormatCustomFunction(conversion, symbols); actual != expected {
+		t.throwMismatch(actual, expected)
+	}
 }
 
 func TestEmptyList(ot *testing.T) {
@@ -156,6 +203,28 @@ func TestEmptyList(ot *testing.T) {
 
 	if actual := n2.String(); actual != expected {
 		t.throwMismatch(actual, expected)
+	}
+}
+
+func TestEquals(ot *testing.T) {
+	t := newTester(ot)
+
+	s1 := lk.CreateSinglyLinkedList(1+1i, 2+2i, 3+3i)
+	s2 := lk.CreateSinglyLinkedList(1+1i, 3+3i, 2+2i)
+
+	if s1.AreEqual(s2, func(c1, c2 *complex128) bool {
+		return c1 == c2
+	}) {
+		t.throwEquals(s1, s2)
+	}
+
+	d1 := lk.CreateDoublyLinkedList(1.9000003, 2.1000001, 3.3000002)
+	d2 := lk.CreateDoublyLinkedList(1.9000004, 2.1000003, 3.3000005)
+
+	if !d1.AreEqual(d2, func(f1, f2 *float64) bool {
+		return math.Abs(*f1-*f2) < 1e-6
+	}) {
+		t.throwNotEquals(d1, d2)
 	}
 }
 
@@ -190,5 +259,26 @@ func TestSinglyLinkedList(ot *testing.T) {
 
 	if actual := head.Format(symbols); actual != expected {
 		t.throwMismatch(actual, expected)
+	}
+}
+
+func TestValidity(ot *testing.T) {
+	t := newTester(ot)
+	head := lk.CreateDoublyLinkedList(1, 2, 3)
+
+	if !head.IsValid() {
+		t.throwValidity(head, true)
+	}
+
+	other := lk.DoubleLinkNode[int]{
+		Next: nil,
+		Prev: nil,
+		Val:  4,
+	}
+
+	head.Next.Prev = &other
+
+	if head.IsValid() {
+		t.throwValidity(head, false)
 	}
 }

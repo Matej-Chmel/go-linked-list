@@ -14,8 +14,8 @@ func (i *doubleImpl[T]) next() commonNode[T] {
 	return i
 }
 
-func (i *doubleImpl[T]) val() T {
-	return i.node.Val
+func (i *doubleImpl[T]) val() *T {
+	return &i.node.Val
 }
 
 // Implementation of ite.CommonNode[T] for SingleLinkNode
@@ -32,6 +32,6 @@ func (i *singleImpl[T]) next() commonNode[T] {
 	return i
 }
 
-func (i *singleImpl[T]) val() T {
-	return i.node.Val
+func (i *singleImpl[T]) val() *T {
+	return &i.node.Val
 }

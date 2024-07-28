@@ -1,10 +1,6 @@
 package golinkedlist
 
-import (
-	"strings"
-
-	at "github.com/Matej-Chmel/go-any-to-string"
-)
+import "strings"
 
 // Interface that represents one singly or doubly linked node
 type commonNode[T any] interface {
@@ -13,7 +9,7 @@ type commonNode[T any] interface {
 	// Returns the next node
 	next() commonNode[T]
 	// Returns the value of the node
-	val() T
+	val() *T
 }
 
 // Format symbols for converting a linked list to a string
@@ -57,16 +53,16 @@ func NewFormatSymbols(isSingleLink bool) *FormatSymbols {
 // Converts a singly or doubly linked list to a string
 // according to format options and symbols
 func formatToString[T any](
-	formatOptions *at.Options, node commonNode[T], symbols *FormatSymbols,
+	conv func(*T) string, node commonNode[T], symbols *FormatSymbols,
 ) string {
 	var builder strings.Builder
 	builder.WriteString(symbols.Start)
-	builder.WriteString(at.AnyToStringCustom(node.val(), formatOptions))
+	builder.WriteString(conv(node.val()))
 
 	for node.hasNext() {
 		node = node.next()
 		builder.WriteString(symbols.Sep)
-		builder.WriteString(at.AnyToStringCustom(node.val(), formatOptions))
+		builder.WriteString(conv(node.val()))
 	}
 
 	builder.WriteString(symbols.End)
